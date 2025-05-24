@@ -627,7 +627,7 @@ int main() {
                         quelleVal = false;
                         appState = ERROR;
                     }
-
+                    
                     
                 }
 
@@ -649,17 +649,40 @@ int main() {
                     break;
                 }
 
-                // Fixed dB scale: -30 to 0
-                float minDb = -30.0f;
-                float maxDb = 0.0f;
-                int nbCercle = 7; // Circles at -30, -25, -20, -15, -10, -5, 0
+                // Calculer les plages pour chaque graphe
+                float minDb1 = graphData.sousVec[0][0];
+                float maxDb1 = graphData.sousVec[0][0];
+                for (const auto& val : graphData.sousVec[0]) {
+                    if (val < minDb1) minDb1 = static_cast<float>(val);
+                    if (val > maxDb1) maxDb1 = static_cast<float>(val);
+                }
+                if (maxDb1 == minDb1) maxDb1 = minDb1 + 1.0f; 
+
+                float minDb2 = minDb1, maxDb2 = maxDb1; 
+                if (graphData.sousVec.size() >= 2 && !graphData.sousVec[1].empty()) {
+                    minDb2 = graphData.sousVec[1][0];
+                    maxDb2 = graphData.sousVec[1][0];
+                    for (const auto& val : graphData.sousVec[1]) {
+                        if (val < minDb2) minDb2 = static_cast<float>(val);
+                        if (val > maxDb2) maxDb2 = static_cast<float>(val);
+                    }
+                    if (maxDb2 == minDb2) maxDb2 = minDb2 + 1.0f; 
+                }
+
+                // Définir la couleur orange clair pour les étiquettes du 2eme graphe
+                Color lightOrange = { 255, 204, 153, 255 };
 
                 // Draw concentric circles
+                int nbCercle = 7;
                 for (int r = 0; r < nbCercle; r++) {
                     float radius = maxRadius * (float)r / (nbCercle - 1);
                     DrawCircleLines(center.x, center.y, radius, LIGHTGRAY);
-                    float dbValue = minDb + (r * (maxDb - minDb) / (nbCercle - 1));
-                    DrawText(TextFormat("%.0f", dbValue), center.x + radius + 10, center.y, 10, GRAY);
+                    // Choisir la plage et la couleur en fonction de showSecondGraph
+                    float dbValue = showSecondGraph ?
+                        (minDb2 + (r * (maxDb2 - minDb2) / (nbCercle - 1))) :
+                        (minDb1 + (r * (maxDb1 - minDb1) / (nbCercle - 1)));
+                    Color labelColor = showSecondGraph ? lightOrange : GRAY;
+                    DrawText(TextFormat("%.2f", dbValue), center.x + radius + 10, center.y, 10, labelColor);
                 }
 
                 // Draw angular labels at 45° intervals
@@ -671,7 +694,7 @@ int main() {
                     DrawText(TextFormat("%d°", angle), x + alignX, y - 10, 10, GRAY);
                 }
 
-                // 1er graphe affichage
+                // 1er graphe affichage (bleu)
                 if (!graphData.sousVec.empty()) {
                     std::vector<double> subVec = graphData.sousVec[0];
                     if (!subVec.empty()) {
@@ -680,8 +703,8 @@ int main() {
                         for (size_t i = 0; i < subVec.size(); i++) {
                             float thetaDegre = i * angleA;
                             float thetaRad = thetaDegre * DEG2RAD;
-                            float point = subVec[i]; // rahou deja normaliser
-                            float normalisedRad = (point - minDb) / (maxDb - minDb); // Maps [-30, 0] to [0, 1]
+                            float point = subVec[i];
+                            float normalisedRad = (point - minDb1) / (maxDb1 - minDb1); // Normalisation avec plage du graphe 1
                             float r = maxRadius * Clamp(normalisedRad, 0.0f, 1.0f);
                             float x = center.x + r * cos(thetaRad);
                             float y = center.y + r * sin(thetaRad);
@@ -704,7 +727,7 @@ int main() {
                     }
                 }
 
-                // affichage 2eme graphe 
+                // affichage 2eme graphe (orange)
                 if (showSecondGraph && graphData.sousVec.size() >= 2) {
                     std::vector<double> subVec2 = graphData.sousVec[1];
                     if (!subVec2.empty()) {
@@ -714,7 +737,7 @@ int main() {
                             float thetaDegre = i * angleA2;
                             float thetaRad = thetaDegre * DEG2RAD;
                             float point = subVec2[i];
-                            float normalisedRad = (point - minDb) / (maxDb - minDb);
+                            float normalisedRad = (point - minDb2) / (maxDb2 - minDb2); // Normalisation avec plage du graphe 2
                             float r = maxRadius * Clamp(normalisedRad, 0.0f, 1.0f);
                             float x = center.x + r * cos(thetaRad);
                             float y = center.y + r * sin(thetaRad);
@@ -741,30 +764,19 @@ int main() {
                     if (angleIndices.size() >= 3 && (angleIndices[0] != 0.0 || angleIndices[1] != 0.0)) {
                         double indexG = angleIndices[0];
                         double indexD = angleIndices[1];
-                        double maxVal = angleIndices[2]; // Use the max value returned by angleDOuverture
+                        double maxVal = angleIndices[2];
                         double angleA = 360.0 / graphData.sousVec[0].size();
                         float thetaG = indexG * angleA * DEG2RAD;
                         float thetaD = indexD * angleA * DEG2RAD;
-                        float r = maxRadius * (maxVal - 3 - minDb) / (maxDb - minDb);
+                        float r = maxRadius * ((maxVal - 3) - minDb1) / (maxDb1 - minDb1); // Normalisation avec plage du graphe 1
                         Vector2 pointG = { center.x + r * cos(thetaG), center.y + r * sin(thetaG) };
                         Vector2 pointD = { center.x + r * cos(thetaD), center.y + r * sin(thetaD) };
                         Color cl = { 168, 241, 255, 255 };
                         DrawCircleV(pointG, 5.0f, cl);
                         DrawCircleV(pointD, 5.0f, cl);
-                        // Draw lines from max-3 points to center for Graph 1
                         DrawLineEx(pointG, center, 2.0f, cl);
                         DrawLineEx(pointD, center, 2.0f, cl);
-                        int startAngle = std::min(indexG, indexD) * angleA;
-                        int endAngle = std::max(indexG, indexD) * angleA;
-                        for (int a = startAngle; a < endAngle; a++) {
-                            float rad = a * DEG2RAD;
-                            float nextRad = (a + 1) * DEG2RAD;
-                            Vector2 p1 = { center.x + r * cos(rad), center.y + r * sin(rad) };
-                            Vector2 p2 = { center.x + r * cos(nextRad), center.y + r * sin(nextRad) };
-                            //DrawLineEx(p1, p2, 2.0f, BLUE);
-                        }
                         double angle = std::abs(indexG - indexD) * (360.0 / graphData.sousVec[0].size());
-                        // Use the smallest angle across the circle
                         angle = std::min(angle, 360.0 - angle);
                         DrawText(TextFormat("Angle d'ouverture Graphe 1: %.2f°", angle), 10, 40, 20, DARKGRAY);
                         legendY += 20;
@@ -781,24 +793,14 @@ int main() {
                         double angleA2 = 360.0 / graphData.sousVec[1].size();
                         float thetaG = indexG * angleA2 * DEG2RAD;
                         float thetaD = indexD * angleA2 * DEG2RAD;
-                        float r = maxRadius * (maxVal - 3 - minDb) / (maxDb - minDb);
+                        float r = maxRadius * ((maxVal - 3) - minDb2) / (maxDb2 - minDb2); // Normalisation avec plage du graphe 2
                         Vector2 pointG = { center.x + r * cos(thetaG), center.y + r * sin(thetaG) };
                         Vector2 pointD = { center.x + r * cos(thetaD), center.y + r * sin(thetaD) };
                         Color cl = { 242, 192, 120, 255 };
                         DrawCircleV(pointG, 5.0f, cl);
                         DrawCircleV(pointD, 5.0f, cl);
-                        // Draw lines from max-3 points to center for Graph 2
                         DrawLineEx(pointG, center, 2.0f, cl);
                         DrawLineEx(pointD, center, 2.0f, cl);
-                        int startAngle = std::min(indexG, indexD) * angleA2;
-                        int endAngle = std::max(indexG, indexD) * angleA2;
-                        for (int a = startAngle; a < endAngle; a++) {
-                            float rad = a * DEG2RAD;
-                            float nextRad = (a + 1) * DEG2RAD;
-                            Vector2 p1 = { center.x + r * cos(rad), center.y + r * sin(rad) };
-                            Vector2 p2 = { center.x + r * cos(nextRad), center.y + r * sin(nextRad) };
-                            //DrawLineEx(p1, p2, 2.0f, YELLOW);
-                        }
                         double angle = std::abs(indexG - indexD) * (360.0 / graphData.sousVec[1].size());
                         angle = std::min(angle, 360.0 - angle);
                         DrawText(TextFormat("Angle d'ouverture Graphe 2: %.2f°", angle), 10, 120, 20, DARKGRAY);
@@ -806,15 +808,14 @@ int main() {
                     }
                 }
 
-                // Ecriture 
-                DrawText("Graph 1: Blue lines ", 10, 10, 20, DARKGRAY);
+                // Légende avec les plages des graphes
+                DrawText(TextFormat("Graph 1: Blue lines (%.2f to %.2f)", minDb1, maxDb1), 10, 10, 20, DARKGRAY);
                 if (showSecondGraph) {
-                    DrawText("Graph 2: Yellow lines", 10, 90, 20, DARKGRAY);
+                    DrawText(TextFormat("Graph 2: Yellow lines (%.2f to %.2f)", minDb2, maxDb2), 10, 90, 20, DARKGRAY);
                 }
 
                 break;
             }
-
             case MODE_3D_LISSAGE: {
                 // variable pour kind de camera
                 static bool isManualCamera = false;
@@ -899,13 +900,14 @@ int main() {
                         }
                     }
 
+
                     // calcule ta3 range ou avoid division 3la 0 
                     double range = globalMaxVal - globalMinVal;
                     if (range == 0) range = 1.0;
 
                     // ndir une gird spherique fiha 64 pas pour theta/phi li houma zawaya ta3 3d 
-                    const int thetaSteps = 64;
-                    const int phiSteps = 64;
+                    const int thetaSteps = 360;
+                    const int phiSteps = 360;
                     std::vector<std::vector<Vector3>> points(thetaSteps, std::vector<Vector3>(phiSteps));
                     std::vector<std::vector<Color>> colors(thetaSteps, std::vector<Color>(phiSteps));
 
@@ -952,13 +954,13 @@ int main() {
                             double effectiveValue = dataValue * sinf(theta);
 
                             //calculer redius propotionnelle ro power
-                            float radius = maxRadius * (float)(effectiveValue - globalMinVal) / range;
+                            float radius = maxRadius * (float)(effectiveValue - globalMinVal) / range; // la distance mn le centre 
                             radius = Clamp(radius, 0.0f, maxRadius);
 
                             //convertion a des donnees 3d 
-                            float x = radius * sinf(theta) * cosf(phi);
-                            float y = radius * cosf(theta);
-                            float z = radius * sinf(theta) * sinf(phi);
+                            float x = radius * sinf(theta) * cosf(phi); //G->D
+                            float y = radius * cosf(theta); //H->B
+                            float z = radius * sinf(theta) * sinf(phi);//A->A
                             points[t][p] = { x, y, z };
 
                             // cloration 
