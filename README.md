@@ -164,7 +164,13 @@ This pipeline ensures consistent, interpretable output regardless of the raw fil
 
 ## Screenshots
 
-> *(Add screenshots of your 2D polar plot and 3D spherical view here)*
+<img width="700" height="468" alt="image" src="https://github.com/user-attachments/assets/bc8e3bf5-f460-4792-8920-0447518c06a7" />
+<img width="706" height="473" alt="image" src="https://github.com/user-attachments/assets/a816a9c7-9487-4625-98a7-f75e10239e57" />
+<img width="704" height="470" alt="image" src="https://github.com/user-attachments/assets/8cf4a25f-2eaa-4965-b658-c3016123796c" />
+<img width="700" height="467" alt="image" src="https://github.com/user-attachments/assets/2812e9f4-8e5d-4e15-9938-dc140b8c828f" />
+<img width="704" height="470" alt="image" src="https://github.com/user-attachments/assets/2822baa1-2a50-4d32-873f-2d8cb27864c7" />
+<img width="704" height="471" alt="image" src="https://github.com/user-attachments/assets/09a9be01-3101-40d0-9de6-e8e352f9f4ff" />
+
 
 ---
 
