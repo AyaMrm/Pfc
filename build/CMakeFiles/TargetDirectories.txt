@@ -1,0 +1,8 @@
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/tinyfd.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/Graphix.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/edit_cache.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/rebuild_cache.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/list_install_components.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/install.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/install/local.dir
+C:/Users/WINDOWS/Downloads/pfc-pro-fixed/pfc-pro/build/CMakeFiles/install/strip.dir
